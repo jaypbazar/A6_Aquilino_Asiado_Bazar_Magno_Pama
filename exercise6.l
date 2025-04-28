@@ -3,7 +3,10 @@
     #include <string.h>
     #include <stdlib.h>
 
-    int yywrap(void) { return 1; } 
+    int yywrap(void) { 
+        // Stops reading input when the lexer reaches the end of the input file.
+        return 1; 
+    } 
 
     // Define a new data type for tokens
     typedef struct {
@@ -82,6 +85,6 @@
 %%
 
 int main() {
-    yylex(); 
+    yylex(); // Call the lexer to start reading input
     return 0;
 }
