@@ -1,17 +1,17 @@
-10 5 +
-count =
-20
- 
-/ 
+x = 10;
+y = 2;
+z = x * y + 5;
 
-x 30 =
+print z;
 
-if x + 
-5 /
+if (z > 20) {
+  print z;
+} else {
+  print x;
+}
 
-count 1 + =
-else
-
-count 1 - =
-while count
-  50 count *
+i = 0;
+while (i < 3) {
+  print i;
+  i = i + 1;
+}
