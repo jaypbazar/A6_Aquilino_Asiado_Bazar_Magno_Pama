@@ -90,7 +90,7 @@ int main() {
     // Print all tokens and their types
     printf("List of Tokens\n");
     for (int i = 0; i < token_index; i++) {
-        printf("Type: %s, Value: %s\n", tokens[i].type, tokens[i].value);
+        printf("%s: %s\n", tokens[i].type, tokens[i].value);
     }
 
     return 0;
