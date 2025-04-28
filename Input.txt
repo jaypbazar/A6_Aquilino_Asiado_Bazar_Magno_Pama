@@ -1,0 +1,17 @@
+10 5 +
+count =
+20
+ 
+/ 
+
+x 30 =
+
+if x + 
+5 /
+
+count 1 + =
+else
+
+count 1 - =
+while count
+  50 count *
