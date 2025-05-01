@@ -209,7 +209,7 @@ NEWLINE     \n
 
 "while"         {
                   printf("Keyword: WHILE\n");
-                  fprintf(stderr, "Warning: 'while' loop simulation is very basic.\n");
+                  fprintf(stderr, "NOTE: 'while' does not repeat yet.\n");
                   if (skipCodeBlock > 0) { BEGIN(SKIP_BLOCK); skipCodeBlock++; }
                   else { isAssignment = 0; }
                 }
