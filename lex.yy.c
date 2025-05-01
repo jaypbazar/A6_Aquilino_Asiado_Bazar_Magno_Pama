@@ -487,6 +487,7 @@ int skipElseBlock = 0;
 int skipCodeBlock = 0;
 int blockLevel = 0;
 
+
 // --- State Management for Assignment ---
 int isAssignment = 0;          
 char assignmentTargetVar[50] = ""; // Stores the name of the variable being assigned to
@@ -576,7 +577,7 @@ void printFinalState();
 #define SKIP_BLOCK 2
 
 /* Token Definitions */
-#line 580 "lex.yy.c"
+#line 581 "lex.yy.c"
 
 /* Macros after this point can all be overridden by user definitions in
  * section 1.
@@ -727,11 +728,11 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
 
-#line 181 "exercise6.l"
+#line 182 "exercise6.l"
 
 
 
-#line 735 "lex.yy.c"
+#line 736 "lex.yy.c"
 
 	if ( yy_init )
 		{
@@ -816,22 +817,22 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 184 "exercise6.l"
+#line 185 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 185 "exercise6.l"
+#line 186 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 186 "exercise6.l"
+#line 187 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 188 "exercise6.l"
+#line 189 "exercise6.l"
 { 
                     printf("Keyword: IF\n"); 
                     printf("SEMANTICS -> Checking condition...\n");
@@ -839,7 +840,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 193 "exercise6.l"
+#line 194 "exercise6.l"
 {
                     printf("Keyword: ELSE\n");
                     isAssignment = 0;
@@ -858,17 +859,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 209 "exercise6.l"
+#line 210 "exercise6.l"
 {
                   printf("Keyword: WHILE\n");
-                  fprintf(stderr, "Warning: 'while' loop simulation is very basic.\n");
+                  fprintf(stderr, "NOTE: 'while' does not repeat yet.\n");
                   if (skipCodeBlock > 0) { BEGIN(SKIP_BLOCK); skipCodeBlock++; }
                   else { isAssignment = 0; }
                 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 216 "exercise6.l"
+#line 217 "exercise6.l"
 {
                    if (skipCodeBlock == 0) {
                        printf("Action: PRINT\n");
@@ -879,7 +880,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 224 "exercise6.l"
+#line 225 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         strcpy(lastIdentifier, yytext);
@@ -896,7 +897,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 238 "exercise6.l"
+#line 239 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         int val = atoi(yytext);
@@ -908,7 +909,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 247 "exercise6.l"
+#line 248 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Operator: %s\n", yytext);
@@ -923,14 +924,14 @@ YY_RULE_SETUP
                 }
 	YY_BREAK
 case 11:
-#line 261 "exercise6.l"
-case 12:
 #line 262 "exercise6.l"
-case 13:
+case 12:
 #line 263 "exercise6.l"
+case 13:
+#line 264 "exercise6.l"
 case 14:
 YY_RULE_SETUP
-#line 263 "exercise6.l"
+#line 264 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Operator: %s\n", yytext);
@@ -948,18 +949,18 @@ YY_RULE_SETUP
                 }
 	YY_BREAK
 case 15:
-#line 280 "exercise6.l"
-case 16:
 #line 281 "exercise6.l"
-case 17:
+case 16:
 #line 282 "exercise6.l"
-case 18:
+case 17:
 #line 283 "exercise6.l"
-case 19:
+case 18:
 #line 284 "exercise6.l"
+case 19:
+#line 285 "exercise6.l"
 case 20:
 YY_RULE_SETUP
-#line 284 "exercise6.l"
+#line 285 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Operator: %s\n", yytext);
@@ -969,7 +970,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 291 "exercise6.l"
+#line 292 "exercise6.l"
 {
                     printf("Delimiter: ;\n");
                     if (skipCodeBlock == 0) {
@@ -1008,7 +1009,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 327 "exercise6.l"
+#line 328 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Delimiter: (\n");
@@ -1018,7 +1019,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 333 "exercise6.l"
+#line 334 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Delimiter: )\n");
@@ -1057,7 +1058,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 369 "exercise6.l"
+#line 370 "exercise6.l"
 {
                     printf("Delimiter: {\n");
                     if (skipCodeBlock > 0) {
@@ -1077,7 +1078,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 386 "exercise6.l"
+#line 387 "exercise6.l"
 {
                     printf("Delimiter: }\n");
                     if (skipCodeBlock > 0) {
@@ -1100,12 +1101,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 406 "exercise6.l"
+#line 407 "exercise6.l"
 { fprintf(stderr, "Error: Unexpected character: %s\n", yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 409 "exercise6.l"
+#line 410 "exercise6.l"
 {
     //  PRINT_VAR state is entered *after* 'print' keyword. It expects an identifier next.
     if (skipCodeBlock == 0) {
@@ -1122,12 +1123,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 422 "exercise6.l"
+#line 423 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 423 "exercise6.l"
+#line 424 "exercise6.l"
 {
                         printf("Delimiter: ;\n");
                         BEGIN(INITIAL); // Return to initial state
@@ -1135,14 +1136,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 427 "exercise6.l"
+#line 428 "exercise6.l"
 {
                         BEGIN(INITIAL);
                     }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 431 "exercise6.l"
+#line 432 "exercise6.l"
 {
                         skipCodeBlock++;
                         printf("SEMANTICS -> Entering nested SKIP_BLOCK, level = %d\n", skipCodeBlock);
@@ -1150,7 +1151,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 435 "exercise6.l"
+#line 436 "exercise6.l"
 {
                         skipCodeBlock--;
                         printf("SEMANTICS -> Exiting SKIP_BLOCK, level = %d\n", skipCodeBlock);
@@ -1162,15 +1163,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 443 "exercise6.l"
+#line 444 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 446 "exercise6.l"
+#line 447 "exercise6.l"
 ECHO;
 	YY_BREAK
-#line 1174 "lex.yy.c"
+#line 1175 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(PRINT_VAR):
 case YY_STATE_EOF(SKIP_BLOCK):
@@ -2058,7 +2059,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 446 "exercise6.l"
+#line 447 "exercise6.l"
 
 /* === C Code Section === */
 
