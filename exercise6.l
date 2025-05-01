@@ -81,6 +81,7 @@ int skipElseBlock = 0;
 int skipCodeBlock = 0;
 int blockLevel = 0;
 
+
 // --- State Management for Assignment ---
 int isAssignment = 0;          
 char assignmentTargetVar[50] = ""; // Stores the name of the variable being assigned to
@@ -185,19 +186,25 @@ NEWLINE     \n
 {NEWLINE}       { /* Ignore */ }
 "$"             { /* Ignore */ }
 
-"if"            { printf("Keyword: IF\n"); }
+"if"            { 
+                    printf("Keyword: IF\n"); 
+                    printf("SEMANTICS -> Checking condition...\n");
+                }
 
 "else"          {
                     printf("Keyword: ELSE\n");
                     isAssignment = 0;
-                    if ((skipCodeBlock > 0 && skipCodeBlock > blockLevel + 1) || skipElseBlock) {
+
+                    if (skipCodeBlock > 0 || skipElseBlock) {
+                        // Skip the else block if the `if` condition was true
                         printf("SEMANTICS -> Skipping ELSE block (IF was true).\n");
                         BEGIN(SKIP_BLOCK);
-                        skipCodeBlock = 1;
+                        skipCodeBlock++;
                     } else {
+                        // Execute the else block if the `if` condition was false
                         printf("SEMANTICS -> Executing ELSE block (IF was false).\n");
+                        skipElseBlock = 1; // Mark that the else block is being executed
                     }
-                    skipElseBlock = 0;
                 }
 
 "while"         {
@@ -277,26 +284,8 @@ NEWLINE     \n
 "==" |
 "!="            {
                     if (skipCodeBlock == 0) {
-                        int right, left;
-                        const char* op_str = yytext;
                         printf("Operator: %s\n", yytext);
-
-                        if (stackTop < 1) {
-                            fprintf(stderr, "Error: Stack underflow for operator '%s'.\n", op_str);
-                            conditionResult = 0; // Default condition to false on error
-                        } else {
-                            right = pop();
-                            left = pop();
-                            if (strcmp(op_str, ">") == 0) conditionResult = (left > right);
-                            else if (strcmp(op_str, "<") == 0) conditionResult = (left < right);
-                            else if (strcmp(op_str, ">=") == 0) conditionResult = (left >= right);
-                            else if (strcmp(op_str, "<=") == 0) conditionResult = (left <= right);
-                            else if (strcmp(op_str, "==") == 0) conditionResult = (left == right);
-                            else if (strcmp(op_str, "!=") == 0) conditionResult = (left != right);
-
-                            printf("SEMANTICS -> Condition: %d %s %d = %s\n", left, op_str, right, conditionResult ? "true" : "false");
-                        }
-                        strcpy(lastIdentifier, ""); // Operator consumed operands
+                        pushOperator(yytext[0]); // Push the operator onto the operator stack
                     }
                 }
 
@@ -345,11 +334,30 @@ NEWLINE     \n
 ")"             {
                     if (skipCodeBlock == 0) {
                         printf("Delimiter: )\n");
+
+                        // Evaluate the condition
+                        if (operatorStackTop >= 0) {
+                            char op = popOperator();
+                            int right = pop();
+                            int left = pop();
+
+                            if (op == '>') conditionResult = (left > right);
+                            else if (op == '<') conditionResult = (left < right);
+                            else if (op == '=') conditionResult = (left == right); // Handle `==` as '='
+                            else if (op == '!') conditionResult = (left != right); // Handle `!=` as '!'
+                            else if (op == 'G') conditionResult = (left >= right); // Handle `>=` as 'G'
+                            else if (op == 'L') conditionResult = (left <= right); // Handle `<=` as 'L'
+
+                            printf("SEMANTICS -> Condition: %d %c %d = %s\n", left, op, right, conditionResult ? "true" : "false");
+                        }
+
                         int result = 0;
+
                         // Evaluate the expression inside the parentheses
                         while (stackTop >= 0 && evalStack[stackTop] != -1) {
                             result += pop(); // Simplified: assumes addition; extend for full operator support
                         }
+
                         if (stackTop >= 0 && evalStack[stackTop] == -1) {
                             pop(); // Remove the marker
                             push(result); // Push the evaluated result back onto the stack
@@ -360,25 +368,40 @@ NEWLINE     \n
                 }
 
 "{"             {
-                  printf("Delimiter: {\n");
-                  if (skipCodeBlock > 0) skipCodeBlock++; 
-                  else {
-                      if (!conditionResult) {
-                          skipCodeBlock = 1; printf("SEMANTICS -> Condition FALSE, start skipping block, level = %d\n", skipCodeBlock); BEGIN(SKIP_BLOCK);
-                      } else {
-                          skipElseBlock = 1; blockLevel++; printf("SEMANTICS -> Condition TRUE, executing block, level = %d\n", blockLevel);
-                      }
-                  }
-                  conditionResult = 1; // Reset for next potential condition check
+                    printf("Delimiter: {\n");
+                    if (skipCodeBlock > 0) {
+                        skipCodeBlock++;
+                    } else {
+                        if (!conditionResult) {
+                            skipCodeBlock = 1; // Start skipping the block
+                            printf("SEMANTICS -> Condition FALSE, start skipping block, level = %d\n", skipCodeBlock);
+                            BEGIN(SKIP_BLOCK);
+                        } else {
+                            skipElseBlock = 1;
+                            blockLevel++;
+                            printf("SEMANTICS -> Condition TRUE, executing block, level = %d\n", blockLevel);
+                        }
+                    }
                 }
+
 "}"             {
-                   printf("Delimiter: }\n");
-                   if (skipCodeBlock > 0) {
-                       skipCodeBlock--;
-                       if (skipCodeBlock == 0) { BEGIN(INITIAL); }
-                   } else {
-                       blockLevel--; printf("SEMANTICS -> End executed block brace, level = %d\n", blockLevel);
-                   }
+                    printf("Delimiter: }\n");
+                    if (skipCodeBlock > 0) {
+                        skipCodeBlock--;
+                        if (skipCodeBlock == 0) {
+                            BEGIN(INITIAL); // Return to the initial state
+                            printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n");
+                            skipElseBlock = 0; // Reset skip else flag
+                            conditionResult = 0; // Reset condition result
+                        }
+                    } else {
+                        blockLevel--;
+                        printf("SEMANTICS -> Exiting block, level = %d\n", blockLevel);
+                        if (blockLevel == 0) {
+                            skipElseBlock = 0; // Reset skip else flag
+                            conditionResult = 0; // Reset condition result at end of block
+                        }
+                    }
                 }
 
 .               { fprintf(stderr, "Error: Unexpected character: %s\n", yytext); }
@@ -398,19 +421,25 @@ NEWLINE     \n
     //  Stay in PRINT_VAR state, wait for semicolon
 }
 <PRINT_VAR>{WHITESPACE} { /* Ignore */ }
-<PRINT_VAR>";" {
-    printf("End of Statement: ;\n");
-    BEGIN(INITIAL); // Return to initial state
-}
-<PRINT_VAR>.|\n {
-    fprintf(stderr, "Error: Expected variable name and semicolon after 'print'. Found: %s\n", yytext);
-    BEGIN(INITIAL);
-}
+<PRINT_VAR>";"      {
+                        printf("Delimiter: ;\n");
+                        BEGIN(INITIAL); // Return to initial state
+                    }
+<PRINT_VAR>.|\n     {
+                        BEGIN(INITIAL);
+                    }
 
-<SKIP_BLOCK>"{"     { skipCodeBlock++; }
+<SKIP_BLOCK>"{"     {
+                        skipCodeBlock++;
+                        printf("SEMANTICS -> Entering nested SKIP_BLOCK, level = %d\n", skipCodeBlock);
+                    }
 <SKIP_BLOCK>"}"     {
                         skipCodeBlock--;
-                        if (skipCodeBlock == 0) { BEGIN(INITIAL); printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n"); }
+                        printf("SEMANTICS -> Exiting SKIP_BLOCK, level = %d\n", skipCodeBlock);
+                        if (skipCodeBlock == 0) {
+                            BEGIN(INITIAL); // Return to the initial state
+                            printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n");
+                        }
                     }
 <SKIP_BLOCK>.|\n    { /* Ignore */ }
 

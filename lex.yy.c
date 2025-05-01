@@ -832,27 +832,33 @@ YY_RULE_SETUP
 case 4:
 YY_RULE_SETUP
 #line 188 "exercise6.l"
-{ printf("Keyword: IF\n"); }
+{ 
+                    printf("Keyword: IF\n"); 
+                    printf("SEMANTICS -> Checking condition...\n");
+                }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 190 "exercise6.l"
+#line 193 "exercise6.l"
 {
                     printf("Keyword: ELSE\n");
                     isAssignment = 0;
-                    if ((skipCodeBlock > 0 && skipCodeBlock > blockLevel + 1) || skipElseBlock) {
+
+                    if (skipCodeBlock > 0 || skipElseBlock) {
+                        // Skip the else block if the `if` condition was true
                         printf("SEMANTICS -> Skipping ELSE block (IF was true).\n");
                         BEGIN(SKIP_BLOCK);
-                        skipCodeBlock = 1;
+                        skipCodeBlock++;
                     } else {
+                        // Execute the else block if the `if` condition was false
                         printf("SEMANTICS -> Executing ELSE block (IF was false).\n");
+                        skipElseBlock = 1; // Mark that the else block is being executed
                     }
-                    skipElseBlock = 0;
                 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 203 "exercise6.l"
+#line 209 "exercise6.l"
 {
                   printf("Keyword: WHILE\n");
                   fprintf(stderr, "Warning: 'while' loop simulation is very basic.\n");
@@ -862,7 +868,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 210 "exercise6.l"
+#line 216 "exercise6.l"
 {
                    if (skipCodeBlock == 0) {
                        printf("Action: PRINT\n");
@@ -873,7 +879,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 218 "exercise6.l"
+#line 224 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         strcpy(lastIdentifier, yytext);
@@ -890,7 +896,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 232 "exercise6.l"
+#line 238 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         int val = atoi(yytext);
@@ -902,7 +908,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 241 "exercise6.l"
+#line 247 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Operator: %s\n", yytext);
@@ -917,14 +923,14 @@ YY_RULE_SETUP
                 }
 	YY_BREAK
 case 11:
-#line 255 "exercise6.l"
+#line 261 "exercise6.l"
 case 12:
-#line 256 "exercise6.l"
+#line 262 "exercise6.l"
 case 13:
-#line 257 "exercise6.l"
+#line 263 "exercise6.l"
 case 14:
 YY_RULE_SETUP
-#line 257 "exercise6.l"
+#line 263 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Operator: %s\n", yytext);
@@ -942,46 +948,28 @@ YY_RULE_SETUP
                 }
 	YY_BREAK
 case 15:
-#line 274 "exercise6.l"
+#line 280 "exercise6.l"
 case 16:
-#line 275 "exercise6.l"
+#line 281 "exercise6.l"
 case 17:
-#line 276 "exercise6.l"
+#line 282 "exercise6.l"
 case 18:
-#line 277 "exercise6.l"
+#line 283 "exercise6.l"
 case 19:
-#line 278 "exercise6.l"
+#line 284 "exercise6.l"
 case 20:
 YY_RULE_SETUP
-#line 278 "exercise6.l"
+#line 284 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
-                        int right, left;
-                        const char* op_str = yytext;
                         printf("Operator: %s\n", yytext);
-
-                        if (stackTop < 1) {
-                            fprintf(stderr, "Error: Stack underflow for operator '%s'.\n", op_str);
-                            conditionResult = 0; // Default condition to false on error
-                        } else {
-                            right = pop();
-                            left = pop();
-                            if (strcmp(op_str, ">") == 0) conditionResult = (left > right);
-                            else if (strcmp(op_str, "<") == 0) conditionResult = (left < right);
-                            else if (strcmp(op_str, ">=") == 0) conditionResult = (left >= right);
-                            else if (strcmp(op_str, "<=") == 0) conditionResult = (left <= right);
-                            else if (strcmp(op_str, "==") == 0) conditionResult = (left == right);
-                            else if (strcmp(op_str, "!=") == 0) conditionResult = (left != right);
-
-                            printf("SEMANTICS -> Condition: %d %s %d = %s\n", left, op_str, right, conditionResult ? "true" : "false");
-                        }
-                        strcpy(lastIdentifier, ""); // Operator consumed operands
+                        pushOperator(yytext[0]); // Push the operator onto the operator stack
                     }
                 }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 303 "exercise6.l"
+#line 291 "exercise6.l"
 {
                     printf("Delimiter: ;\n");
                     if (skipCodeBlock == 0) {
@@ -1020,7 +1008,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 339 "exercise6.l"
+#line 327 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Delimiter: (\n");
@@ -1030,15 +1018,34 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 345 "exercise6.l"
+#line 333 "exercise6.l"
 {
                     if (skipCodeBlock == 0) {
                         printf("Delimiter: )\n");
+
+                        // Evaluate the condition
+                        if (operatorStackTop >= 0) {
+                            char op = popOperator();
+                            int right = pop();
+                            int left = pop();
+
+                            if (op == '>') conditionResult = (left > right);
+                            else if (op == '<') conditionResult = (left < right);
+                            else if (op == '=') conditionResult = (left == right); // Handle `==` as '='
+                            else if (op == '!') conditionResult = (left != right); // Handle `!=` as '!'
+                            else if (op == 'G') conditionResult = (left >= right); // Handle `>=` as 'G'
+                            else if (op == 'L') conditionResult = (left <= right); // Handle `<=` as 'L'
+
+                            printf("SEMANTICS -> Condition: %d %c %d = %s\n", left, op, right, conditionResult ? "true" : "false");
+                        }
+
                         int result = 0;
+
                         // Evaluate the expression inside the parentheses
                         while (stackTop >= 0 && evalStack[stackTop] != -1) {
                             result += pop(); // Simplified: assumes addition; extend for full operator support
                         }
+
                         if (stackTop >= 0 && evalStack[stackTop] == -1) {
                             pop(); // Remove the marker
                             push(result); // Push the evaluated result back onto the stack
@@ -1050,41 +1057,55 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 362 "exercise6.l"
+#line 369 "exercise6.l"
 {
-                  printf("Delimiter: {\n");
-                  if (skipCodeBlock > 0) skipCodeBlock++; 
-                  else {
-                      if (!conditionResult) {
-                          skipCodeBlock = 1; printf("SEMANTICS -> Condition FALSE, start skipping block, level = %d\n", skipCodeBlock); BEGIN(SKIP_BLOCK);
-                      } else {
-                          skipElseBlock = 1; blockLevel++; printf("SEMANTICS -> Condition TRUE, executing block, level = %d\n", blockLevel);
-                      }
-                  }
-                  conditionResult = 1; // Reset for next potential condition check
+                    printf("Delimiter: {\n");
+                    if (skipCodeBlock > 0) {
+                        skipCodeBlock++;
+                    } else {
+                        if (!conditionResult) {
+                            skipCodeBlock = 1; // Start skipping the block
+                            printf("SEMANTICS -> Condition FALSE, start skipping block, level = %d\n", skipCodeBlock);
+                            BEGIN(SKIP_BLOCK);
+                        } else {
+                            skipElseBlock = 1;
+                            blockLevel++;
+                            printf("SEMANTICS -> Condition TRUE, executing block, level = %d\n", blockLevel);
+                        }
+                    }
                 }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 374 "exercise6.l"
+#line 386 "exercise6.l"
 {
-                   printf("Delimiter: }\n");
-                   if (skipCodeBlock > 0) {
-                       skipCodeBlock--;
-                       if (skipCodeBlock == 0) { BEGIN(INITIAL); }
-                   } else {
-                       blockLevel--; printf("SEMANTICS -> End executed block brace, level = %d\n", blockLevel);
-                   }
+                    printf("Delimiter: }\n");
+                    if (skipCodeBlock > 0) {
+                        skipCodeBlock--;
+                        if (skipCodeBlock == 0) {
+                            BEGIN(INITIAL); // Return to the initial state
+                            printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n");
+                            skipElseBlock = 0; // Reset skip else flag
+                            conditionResult = 0; // Reset condition result
+                        }
+                    } else {
+                        blockLevel--;
+                        printf("SEMANTICS -> Exiting block, level = %d\n", blockLevel);
+                        if (blockLevel == 0) {
+                            skipElseBlock = 0; // Reset skip else flag
+                            conditionResult = 0; // Reset condition result at end of block
+                        }
+                    }
                 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 384 "exercise6.l"
+#line 406 "exercise6.l"
 { fprintf(stderr, "Error: Unexpected character: %s\n", yytext); }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 387 "exercise6.l"
+#line 409 "exercise6.l"
 {
     //  PRINT_VAR state is entered *after* 'print' keyword. It expects an identifier next.
     if (skipCodeBlock == 0) {
@@ -1101,49 +1122,55 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 400 "exercise6.l"
+#line 422 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 401 "exercise6.l"
+#line 423 "exercise6.l"
 {
-    printf("End of Statement: ;\n");
-    BEGIN(INITIAL); // Return to initial state
-}
+                        printf("Delimiter: ;\n");
+                        BEGIN(INITIAL); // Return to initial state
+                    }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 405 "exercise6.l"
+#line 427 "exercise6.l"
 {
-    fprintf(stderr, "Error: Expected variable name and semicolon after 'print'. Found: %s\n", yytext);
-    BEGIN(INITIAL);
-}
+                        BEGIN(INITIAL);
+                    }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 410 "exercise6.l"
-{ skipCodeBlock++; }
+#line 431 "exercise6.l"
+{
+                        skipCodeBlock++;
+                        printf("SEMANTICS -> Entering nested SKIP_BLOCK, level = %d\n", skipCodeBlock);
+                    }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 411 "exercise6.l"
+#line 435 "exercise6.l"
 {
                         skipCodeBlock--;
-                        if (skipCodeBlock == 0) { BEGIN(INITIAL); printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n"); }
+                        printf("SEMANTICS -> Exiting SKIP_BLOCK, level = %d\n", skipCodeBlock);
+                        if (skipCodeBlock == 0) {
+                            BEGIN(INITIAL); // Return to the initial state
+                            printf("SEMANTICS -> Exiting SKIP_BLOCK state.\n");
+                        }
                     }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 415 "exercise6.l"
+#line 443 "exercise6.l"
 { /* Ignore */ }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 418 "exercise6.l"
+#line 446 "exercise6.l"
 ECHO;
 	YY_BREAK
-#line 1147 "lex.yy.c"
+#line 1174 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(PRINT_VAR):
 case YY_STATE_EOF(SKIP_BLOCK):
@@ -2031,7 +2058,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 418 "exercise6.l"
+#line 446 "exercise6.l"
 
 /* === C Code Section === */
 
